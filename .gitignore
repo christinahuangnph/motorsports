@@ -1,0 +1,8 @@
+
+TinyWireM/
+TinyWireS/examples/Tiny85_I2C_Slave_Ex/Tiny85_I2C_Slave_Ex.pde
+TinyWireS/keywords.txt
+TinyWireS/TinyWireS.cpp
+TinyWireS/TinyWireS.h
+TinyWireS/usiTwiSlave.c
+TinyWireS/usiTwiSlave.h
