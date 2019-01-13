@@ -53,9 +53,12 @@ void loop() {
   // validate percentages
   boolean valid = valid(percentHi - percentLo);
   if(!valid) {
-    //START TIMER STUFF
+    //Start timer
+    //enable interrupts
+    
   }
-  // relay to Beaglebone
+  // relay pedal values to Beaglebone 
+  delay(10); //wait 10 ms;
   
 
 }
@@ -66,6 +69,8 @@ float convertToPercent(float val, float compare) {
   return percent = val/compare;
 }
 
+/* Check whether the pedal value difference is valid
+ */
 boolean valid(float val) {
   if(val > 0.88 || val < 0.72) { //outside the 10% range
     return false;
