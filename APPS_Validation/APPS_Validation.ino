@@ -12,12 +12,12 @@
     Connect to i2c-0 on Beaglebone: 0x44E0_B000
 */
 
-#include <"TinyWireM.h"> //I2C ATtiny Library
+#include <"TinyWireS.h"> //I2C ATtiny Library
 #include <avr/interrupt.h> //Interrupt Handler Library
 #include <avr/io.h>
 #include "TimerOne.h"
 
-#define I2C_SLAVE_ADDR  0x00 //Beaglebone Address - REPLACE
+#define I2C_MASTER_ADDR  0x00 //Beaglebone Address - REPLACE
 
 // define input pins
 int inputHi = 2;
@@ -29,9 +29,10 @@ float lo_max = 3.6;
 float hi_min = 1.6;
 float lo_min = 0.8;
 
-// constant
-float hasError;
-float currTime;
+// global variables
+boolean good = true;
+boolean oldGood = true;
+int loopCounter = 0;
 
 void setup() {
   // declare input pins as inputs and set pullups
@@ -41,17 +42,11 @@ void setup() {
   digitalWrite(inputLo, HIGH);
 
   // Set Up I2C
-  TinyWireM.begin();  // initialize I2C library
+  TinyWireS.begin();  // initialize I2C library
 
   //SET UP BEAGLEBONE COMMUNICATION STUFF
-  TinyWireM.beginTransmission(uint8_t I2C_SLAVE_ADDR); //set up slave
+  TinyWireS.beginTransmission(uint8_t I2C_SLAVE_ADDR); //set up slave
 }
-
-
-void timerServiceRoutine() { // timer interrupt service routine
-    if()
-}
-
 
 void loop() {
   // read in pedal values
@@ -63,16 +58,26 @@ void loop() {
   float percentLo = convertToPercent((sensorValLo - lo_min), (lo_max - lo_min));
 
   // validate percentages
-  boolean currValid = valid(percentHi - percentLo);
-  if (!currValid) {
-    currTime = millis();
-    hasError = true;
-    Timer1.initialize(currTime);
-    Timer1.attachInterrupt(timerServiceRoutine);
+  boolean good = valid(percentHi - percentLo);
+  if (!good) {
+    if(!oldGood) {
+      loopCounter++;
+      if(loopCounter == 10) { //it's been false for 90 ms
+        //send error message
+        Serial.print("Bad banana"); //for testing purposes
+      }
+    } else {
+      loopCounter = 0;
+    }
+    if(loopCounter > 0) {
+      oldGood = false; 
+    }
   }
-  // relay pedal values to Beaglebone - DO THIS
   
-  delay(10); //wait 10 ms;
+  // relay pedal values to Beaglebone - FINISH THIS
+  Serial.print("High: " + sensorValHi + " Low: " + sensorValLo); //for testing purposes
+  
+  delay(9); // wait 9 ms;
 }
 
 /* Convert raw pedal values to percent of total range
