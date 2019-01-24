@@ -31,7 +31,6 @@ float lo_min = 0.8;
 
 // global variables
 boolean good = true;
-boolean oldGood = true;
 int loopCounter = 0;
 
 void setup() {
@@ -60,7 +59,6 @@ void loop() {
   // validate percentages
   boolean good = valid(percentHi - percentLo);
   if (!good) {
-    if(!oldGood) {
       loopCounter++;
       if(loopCounter == 10) { //it's been false for 90 ms
         //send error message
@@ -68,9 +66,6 @@ void loop() {
       }
     } else {
       loopCounter = 0;
-    }
-    if(loopCounter > 0) {
-      oldGood = false; 
     }
   }
   
