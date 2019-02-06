@@ -19,10 +19,6 @@
  */
 
 #include "./TinyWireS/TinyWireS.h" //I2C ATtiny Library
-#include <avr/interrupt.h> //Interrupt Handler Library
-#include <avr/io.h>
-//#include "./TimerOne/TimerOne.h"
-
 
 #define I2C_SLAVE_ADDR  0x03 //Beaglebone Address - REPLACE
 #define I@C_SLAVE_ADDR 0x26   //ATtiny Address
@@ -55,12 +51,6 @@ void setup() {
   TinyWireS.begin(I2C_SLAVE_ADDR);  // initialize I2C library
 }
 
-/* Convert raw pedal values to percent of total range
-*/
-float convertToPercent(float val, float compare) {
-  return val / compare;
-}
-
 /* Check whether the pedal value difference is valid
 */
 boolean valid(float val) {
@@ -77,8 +67,8 @@ void loop() {
   float sensorValLo = analogRead(inputLo); //read in raw val
 
   // convert to percents
-  float percentHi = convertToPercent((sensorValHi - hi_min), (hi_max - hi_min));
-  float percentLo = convertToPercent((sensorValLo - lo_min), (lo_max - lo_min));
+  float percentHi = (sensorValHi-hi_min)/(hi_max - hi_min);
+  float percentLo = (sensorValLo - lo_min)/(lo_max - lo_min);
 
   // send to Beaglebone
   //TinyWireS.send(sensorValHi);
