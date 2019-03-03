@@ -1,7 +1,7 @@
 #include <TinyWire.h>
 
 /*  Christina Huang
-    ATtiny85 APPS Validation
+    ATtiny85 Accelerator Pedal Validation
     Transmits to Beaglebone via I2C
 */
 
@@ -12,17 +12,13 @@
     4 - GND                                    5 - PWM, MOSI, AREF (PB0) SDA
 */
 
-/* I2C Configurations
- * 0x03 - Good/Bad 00-Bad, 01-Good
- * 0x04 - Pedal Value Hi
- * 0x05 - Pedal Value Lo
- * 
+/* I2C Configurations 
  * Connect to i2c-2 on Beaglebone
  */
 
 
 // define I2C address
-byte I2C_OWN_ADDR  = 10;
+byte I2C_SLAVE_ADDR  = 10;
 
 // define input pins
 int inputHi = 3;
@@ -41,17 +37,18 @@ float lo_min = 0.8;
 boolean good = true;
 int loopCounter = 0;
 
+
 void setup() {
   // declare input pins as inputs and set pullups
   pinMode(inputHi, INPUT);
   digitalWrite(inputHi, HIGH);
   pinMode(inputLo, INPUT);
   digitalWrite(inputLo, HIGH);
-  //declare output pins as outputs and set pullups
-  TinyWire.begin(I2C_OWN_ADDR);
-  TinyWire.onRequest(I2C_ISR);
 
-  // test
+  // configure I2C 
+  TinyWire.begin();
+
+  // set up test LED
   pinMode(LED, OUTPUT);
 }
 
@@ -65,22 +62,26 @@ boolean valid(float val) {
   }
 }
 
-void I2C_ISR(byte val) {
-  TinyWire.send(val);
+void transmit(byte val){
+      // begin a master transmission
+    TinyWire.beginTransmission(I2C_SLAVE_ADDR);
+    TinyWire.send(val); //fill buffer
+    if(TinyWire.endTransmission() != 0){ //send buffer
+      // turn LED on, to indicate an error
+      digitalWrite(LED, HIGH);
+    }
 }
 
 void loop() {
-
   // read in pedal values
   float sensorValHi = analogRead(inputHi); //read in raw val
   float sensorValLo = analogRead(inputLo); //read in raw val
 
   // convert to percents
   byte percentHi = (sensorValHi - hi_min)/(hi_max - hi_min); //between 0 and 100
+  transmit(percentHi);
   byte percentLo = (sensorValLo - lo_min)/(lo_max - lo_min) + 101; //between 101-200
-
-  byte val = percentHi;
-  val = percentLo;
+  transmit(percentLo);
 
   // validate percentages
   boolean good = valid(percentHi - percentLo);
@@ -88,11 +89,12 @@ void loop() {
       loopCounter++;
       if(loopCounter == 10) { //it's been false for 90 ms
         //send error message
-        val = 255; //bad
+        transmit(255); //bad
       }
     } else {
       loopCounter = 0;
-      val = 254; //good
+      transmit(254); //good
     }
-}
 
+  delay(100);
+}
