@@ -7,6 +7,8 @@ ATtiny85 - sensor validation and ADC
 
 Beaglebone - electronic control unit
 
-APPS_Validation: uses ATtiny85 as slave sender, Beaglebone master receiver
+Bamocar D3 Motor Control Unit
 
-AccelVal: uses ATtiny85 as master sender, Beaglebone slave receiver
+Communications: CAN, I2C
+
+APPS_Validation: uses ATtiny85 as slave sender, Beaglebone master receiver
